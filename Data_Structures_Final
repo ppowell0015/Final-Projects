@@ -1,0 +1,1146 @@
+//***************************************************************************
+//  FILENAME:	 POWELLASSN6.cpp
+//  DESCRIPTION: Program will read in info from a data file, if the user wants to
+//				 file name will be entered by the user, and then error checked as well
+//				 the file includes a MLS number, a price, a status, a zip and a company
+//				 EXAMPLE
+//				 123456 309403 0 30945-4054 Phillip Powell
+//				 Then the program will give the user a menu to choose from that includes
+//				 an option to display all, remove a listing, add a listing, or exit the
+//				 program,  The menu will loop around until the user chooses to exit, then
+//               when the user does exit, it will ask if they want all of the changes
+//				 they have made to be saved or not before exiting.
+//  CLASS/TERM:  CS 362 / SUMMER TERM 1
+//  DESIGNER:	 Phillip Powell
+//  FUNCTIONS:	 main - Gives an introduction to the program, calls functions
+//				 readinnodes - reads data from LISTINGS and puts it in linked list
+//				 displaymenu - Display a menu for the user to choose from
+//				 showlist - shows the list of the stuct to the screen
+//				 addtolist - lets the user add a new listing to the linked list
+//				 mlsnum - enter the mls #, then error check
+//				 getprice - enter the price, then error check
+//				 getstatus - enter the status, then error check
+//				 getzip - enter the zip code, then error check
+//				 getcompany - enter the company, then error check
+//				 displaymls - display all the mls #'s to the screen
+//				 remove - remove a listing from the stuct
+//				 savetofile - asks for file, then save linked list to file
+//				 makechanges - loads changes file, and changes prices
+//***************************************************************************
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include<stdlib.h>
+#include<conio.h>
+#include<string>
+#include<cctype>
+using namespace std;
+
+
+struct house_list {				// define struct
+	int mlsnum;
+	double price;
+	enum Status {AVAILABLE, CONTRACT, SOLD} status;
+	string zipcode;
+	string company;
+	};					// end struct definition
+	
+struct houseNode
+	{
+	house_list house;
+	houseNode* next;
+	};
+
+// Function Prototypes
+houseNode* readinnodes (houseNode*, string);
+void displaymenu (houseNode*);
+void showlist (houseNode*);
+void addtolist (houseNode*);
+int mlsnum (void);
+double getprice (void);
+int getstatus(void);
+string getzip (void);
+string getcompany (void);
+void displaymls (houseNode*);
+void remove (houseNode*);
+void savetofile (houseNode*);
+houseNode* makechanges (houseNode*);
+
+//*************************************************************************
+//  FUNCTION:	  main
+//  DESCRIPTION:  Gives the user a introduction of what the program will do
+//				  then it will ask the user if they want to use the data file
+//				  or not, then it will call to other functions, or exit if
+//				  the user chooses
+//  INPUT: File:  None
+//         Paramaters: None
+//  OUTPUT:    Return value 0 on sucess, 1 if data file could not be opened
+//  CALLS TO:	  readinnodes
+//					reads in the data from the data file, and puts it in a linked list
+//				  displaymenu
+//					Displays a menu for the user to choose from
+//*************************************************************************
+int main ()
+{
+houseNode* houseList = NULL;			// set linked list to NULL to start
+
+
+char choice;								// charecter for choice 
+int error;	  	  	  	  	  	  	  	  // error checking 
+string filename;							// string for file name
+
+cout << "Welcome to the Real Estate Program!";
+cout << "\n";
+cout << "This program will ask the user if they would like to load a data file";
+cout << "\n";
+cout << "that contains the MLS number, price, status, zip code, and company name";
+cout << "\n";
+cout << "of the listings for houses. If they choose to load it, the program will put";
+cout << "\n";
+cout << "All those values in a struct, if they choose not to load it, the program will";
+cout << "\n";
+cout << "start with an empty struct.  If they do load it, but the file cannot be found";
+cout << "\n";
+cout << "the program will let the user know and ask if they would like to continue with";
+cout << "\n";
+cout << "an empty struct or exit. After that the program will display a menu asking";
+cout << "\n";
+cout << "the user to choose to either display all listings, add a listing, delete a";
+cout << "\n";
+cout << "listing, change the prices, or exit. Program will loop until user chooses to exit";
+cout << "\n";
+cout << "if the user exits the user will be asked if they want to save changes or not.";
+cout << "\n\n";
+system("pause");
+
+system("cls");
+
+cout << "Would you like to load the file with data about the listings?(Y/N): ";
+cin >> choice;									// ask user if they want to load file
+choice = toupper(choice);						// uppercase the choice
+
+	if (choice == 'Y')
+		{
+		cout << "\n\n";
+		cout << "FILE NAME IS CASE SENSITIVE!!";
+		cout << "\n";
+		cout << "Please enter the name of the file:";
+		cout << "\n";
+		cout << "Or enter E to continue without the file: ";
+		cin >> filename;
+			if (filename == "E")
+			displaymenu (houseList);						// call to function to display menu
+			
+			else
+				{
+				houseList = readinnodes (houseList, filename);
+					if (houseList == NULL)
+						error = 1;
+						
+				while (error ==1)
+					{
+					filename.clear();
+					error = 0;
+					system("cls");
+					cout << "You have entered an invalid filename!";
+					cout << "\n";
+					cout << "Please enter the name of the file:";
+					cout << "\n";
+					cout << "Or enter E to continue without the file: ";
+					cin >> filename;
+					if (filename == "E")
+						error = 0;
+					else
+						{
+						houseList = readinnodes (houseList, filename);
+						if (houseList == NULL)
+							error = 1;
+						}
+						
+					}			// end while
+				}		// end else
+		} 		// end if choice
+
+	displaymenu (houseList);						// call to function to display menu
+return 0;												// exit return 0 on sucess
+}
+
+//*********************************************************************
+// FUNCTION: readinarrays
+// DESCRIPTION: This function will read in the mls #, price, status,
+//				zip code, and company from the data file, and then correctly
+//				put all the data into the struct house_list
+// INPUT:
+//      Parameters: houseList - the linked list
+//      File:  LISTINGS - File contains the phone number, plan type and the bill
+//					   for each phone line
+//				EXAMPLE
+//				123456 109995 1 50694-5069 Phillip Powell
+//  OUTPUT:
+//      Return Val: houseList - the linked list
+//      Parameters: None
+//      File:		None
+//  CALLS TO:  None
+//**********************************************************************
+houseNode* readinnodes(houseNode* houseList, string filename)
+{
+  char pauseChar;           // to pause after memory allocation failure
+  
+  houseNode *newNode,         // Temp ptr used to allocate memory for new nodes
+          *last = NULL;     // Ptr to Last node in list
+  
+  // Note: Setting the first and last pointers to NULL indicates an empty list
+
+  int mls_num;
+  double house_price;
+  int stat;
+  string zip;
+  string comp;
+  char ch;
+
+  ifstream inFile;          // Input file stream for data file
+
+  inFile.open (filename.c_str());       // Open data file
+
+  if (!inFile)
+     cout << "File Not Opened";
+
+  else {                              // Data file opened successfully
+         inFile >> mls_num >> house_price >> stat >> zip;
+	    getline(inFile, comp);   // Read one line of data
+	      
+	 while (inFile && (ch != '\n'))
+	  {
+
+		comp.erase(0, 1);
+        newNode = new houseNode;    // Allocate new node space
+
+         if (newNode == NULL)
+		  {
+             cout << "Heap error - could not allocate memory" << endl;
+             cin >> pauseChar;
+          }
+
+         else {                        // Memory allocated successfully
+                                       // so put data into new node
+             newNode->house.mlsnum = mls_num;
+             newNode->house.price = house_price;
+			 newNode->house.status = static_cast<house_list::Status>(stat);
+			 newNode->house.zipcode = zip;
+			 newNode->house.company = comp;
+             newNode->next = NULL;        	
+
+             // Insert new node into the list
+             if (houseList == NULL) 
+			 {     // If list is empty...
+                 last = newNode;          // point both pointers to new node 
+				 houseList = newNode;
+             }
+
+             else 
+			 {                   // If list is not empty...
+                 last->next = newNode;    // Point Next ptr in last to new node
+                 last = newNode;          // and also point last to new node
+             }
+	    inFile >> mls_num >> house_price >> stat >> zip;
+	    getline(inFile, comp);   // Read one line of data
+        	 }   // end else where newNode != NULL
+
+     } 
+
+     inFile.close();
+  }  // end else where (inFile)
+   
+ return houseList;     
+}
+
+//*********************************************************************
+// FUNCTION: displaymenu
+// DESCRIPTION: This function will display a menu of choices to the user
+//				and will continue to loop around until the user chooses to exit
+// INPUT:
+//      Parameters: houseList - the linked list
+//      File:  None
+//  OUTPUT:
+//      Return Val: None
+//      Parameters: houseList - the linked list
+//      File:		None
+//  CALLS TO:  showlist - displays all of the values in the struct
+//			   addtolist - allows user to add to the stuct
+//			   remove - allows user to remove from the struct
+//			   savetofile - saves the new struct to the file
+//			   makechanges - loads changes and changes prices
+//**********************************************************************
+void displaymenu (houseNode* houseList)
+{
+char choice;									// char for choice
+char pick;										// char for pick
+while (choice!= 'E')							// while user does not want to exit
+	{
+	system("cls");
+	cout << "Please make a choice from the following options";
+	cout << "\n\n";
+	cout << "Enter D to Display all listing";
+	cout << "\n";
+	cout << "Enter A to add a new listing to the list";
+	cout << "\n";
+	cout << "Enter R to remove a listing from the list";
+	cout << "\n";
+	cout << "Enter C to load all of the price changes to the listings";
+	cout << "\n";
+	cout << "Enter E to exit the program";
+	cout << "\n\n";
+	cout << "Enter the letter of your choice: ";
+	cin >> choice;											// display choices, then ask for answer
+	choice = toupper(choice);									// uppercase the choice
+		
+	switch (choice)								// switch the choice
+		{
+		case 'D':									// case display
+		case 'd':
+			{
+			system("cls");
+			cout << "Here is a list of all of the house listings...";
+			cout << "\n\n";
+			showlist (houseList);								// call to function to display listings
+			cout << "\n\n";
+			system("pause");
+			break;
+			}
+		case 'A':															// case add
+		case 'a':
+			{
+			system("cls");
+			addtolist (houseList);								// call to function to add a listings
+			break;
+			}
+		case 'R':															// case remove
+		case 'r':
+			{
+			system("cls");
+			remove (houseList);									// call to function to remove a listing
+			break;
+			}
+		case 'C':															// case remove
+		case 'c':
+			{
+			system("cls");
+			houseList = makechanges (houseList);
+			break;
+			}
+		case 'E':															// case to exit the program
+		case 'e':
+			{
+			system("cls");
+			cout << "Thank you for using the program!";
+			cout << "\n\n";
+			cout << "Would you like to save the changes you have made to the listings(Y/N)?: ";			// ask if user wants to save changes
+			cin >> pick;
+			
+		    if (pick == 'Y')
+			savetofile (houseList);	    								// if yes, overwrite the file with new values
+			break;
+			}
+		default:																			// if user did not enter a correct choice, display error message
+			{
+			cout << "\n\n";
+			cout << "You have entered a letter that is not one of the choices";
+			cout << "\n\n";
+			cout << "Please enter either D, A, R, C, or E";
+			cout << "\n\n";
+			system("pause");
+			break;
+			}
+		}			// end switch
+	}		// end while
+}		// end function
+
+//*********************************************************************
+// FUNCTION: showlist
+// DESCRIPTION: This function will display all of the information in
+//				the structure to the screen, one record per line
+// INPUT:
+//      Parameters: house_list listings - the struct house_list
+//					numlistings - the number of values in the struct
+//      File:  None
+//  OUTPUT:
+//      Return Val: None
+//      Parameters: None
+//      File:		None
+//  CALLS TO:  None
+//**********************************************************************
+void showlist (houseNode* houseList)
+{
+enum {AVAILABLE, CONTRACT, SOLD};
+int idx;
+int a=1;
+houseNode* tempptr = houseList;
+	   	   	   	   	   	  
+if (a==0)											// if no values in array, display error message
+	{
+	cout << "There are not currently any listings stored!";
+	cout << "\n";
+	system("pause");
+	}
+	
+else											// else display all values to the screen
+	{
+	cout  << left << setw(9) << "MLS #" << setw(17) << "Asking Price" << setw(17) << "Listing Status" << setw(13) << "Zip Code" << setw(20) << "Realtor";
+	cout << "\n";
+	cout << setw(9) << "------" << setw(17) << "------------" << setw(17) << "--------------" << setw(13) << "--------" << setw(20) << "--------";
+	cout << "\n";
+		
+	while (tempptr != NULL)	  	  	  	  	  	  	  	  	  	  	  	  	  	  // switch to display enum as string and not number
+		{
+		cout << setw(9) << tempptr->house.mlsnum << setw(17) << tempptr->house.price << setw(17); 
+		switch (tempptr->house.status)
+			{
+			case AVAILABLE:											// if 0, display AVAILABLE
+				cout << "Available";
+				break;
+			case CONTRACT:											// if 1, display CONTRACT
+				cout << "Contract";
+				break;
+			case SOLD:												// if 2, display SOLD
+				cout << "Sold";
+				break;
+			}		//end switch
+		cout << setw(13) << tempptr->house.zipcode << setw(20) << tempptr->house.company;
+		cout << "\n";								// enter line after each record
+		      tempptr = tempptr->next;
+		}		// end for loop
+	}		// end else
+
+}		// end function
+
+//*********************************************************************
+// FUNCTION: addtolist
+// DESCRIPTION: This function will allow the user to add a new record
+//				to the stuct house_list
+// INPUT:
+//      Parameters: house_list listings - the struct house_list
+//					numlistings - the number of values in the struct
+//      File:  None
+//  OUTPUT:
+//      Return Val: None
+//      Parameters: house_list listings - the struct house_list
+//					numlistings - the number of values in the struct
+//      File:		None
+//  CALLS TO:  mlsnum - enter mls #, error check
+//			   getprice - get the price, error check
+//			   getstatus - get the status, error check
+//			   get zip - get the zip code, error check
+//			   getcompany - get the company, error check
+//**********************************************************************
+void addtolist (houseNode* houseList)
+{
+char choice = 'Y';										// set choice to yes from the begining
+int MAX = 2000;											// set max at 2000
+int mls_num;											// temp value for mls #
+double house_price;	 	 	 	 	 	 	 	 	 	 // value for house price;
+string zip_code;										// value for zip code
+string comp;										// values for company name
+int stat;												// temp value for enum type
+houseNode* first = houseList;
+houseNode *newNode;        // Temp ptr used to allocate memory for new nodes
+
+cout << "You have chosen to add a listing to the list";
+cout << "\n";								// display opening message
+system("pause");
+
+while (choice == 'Y')							// while user wants to continue
+	{
+		system("cls");
+		mls_num = mlsnum();	     	 	 	 	 // call to function to get mls #
+		system("cls");
+		house_price = getprice ();	  	  	  	  // call to function to get price
+		system("cls");
+		stat = getstatus();									// call to function to get status
+		system("cls");
+		zip_code = getzip ();	 	 	 	 	 	 // call to function to get zip code
+		system("cls");
+		comp = getcompany ();	 	 	 	 	 // call to functionto get company
+		
+		newNode = new houseNode;    // Allocate new node space
+		                                       // so put data into new node
+		newNode->house.mlsnum = mls_num;
+        newNode->house.price = house_price;
+		newNode->house.status = static_cast<house_list::Status>(stat);
+		newNode->house.zipcode = zip_code;
+		newNode->house.company = comp;
+        newNode->next = NULL;        	
+
+		
+	if (houseList == NULL)
+		{
+		first = newNode;
+		houseList = newNode;
+		}
+	else
+		{
+		  while (first->next != NULL)
+			{
+			first = first->next;
+			}
+		first->next = newNode;    // Point Next ptr in last to new node
+        first = newNode;          // and also point last to new node
+		}
+		
+		cout << "Would you like to add another listing(Y/N)?: ";				// ask user if they would like to add another
+		cin >> choice;
+		choice = toupper(choice);				// uppercase the choice	   	   
+		
+	}	// end wile
+	
+
+}	// end function
+
+//*********************************************************************
+// FUNCTION: getmlsnum
+// DESCRIPTION: This function will get the MLS # from the user, then it
+//				will error check and loop around until the value is correct
+// INPUT:
+//      Parameters: None
+//      File:  None
+//  OUTPUT:
+//      Return Val: mlsnum
+//      Parameters: mlsnum
+//      File:		None
+//  CALLS TO:  checkforvalue - searches for the entered mls #
+//**********************************************************************
+int mlsnum (void)
+{
+int mlsnum;								// value for mls #
+int lowest = 100000;					// min amount the number can be
+int highest = 999999;					// max amount the number can be
+int retval = -1;
+
+	cout << "Enter the 6 digit MLS number: ";
+	cin >> mlsnum;
+	
+	while ((mlsnum < lowest)||(mlsnum > highest))			// while the value is too small or too big
+		{
+		cout << "You have entered an invalid MLS number";
+		cout << "\n";
+		cout << "Please enter a VALID 6 digit MLS number: ";
+		cin >> mlsnum;					// allow them to re-enter
+		}
+	
+return mlsnum;				// return mlsnum
+}
+
+//*********************************************************************
+// FUNCTION: getprice
+// DESCRIPTION: This function will get the price from the user, then it
+//				will error check and loop around until the value is correct
+// INPUT:
+//      Parameters: None
+//      File:  None
+//  OUTPUT:
+//      Return Val: price
+//      Parameters: price
+//      File:		None
+//  CALLS TO:  None
+//**********************************************************************
+double getprice (void)
+{
+double price;					// value for price
+string price1;					// string value for price for error checking
+int leng;						// value for length
+int error = 0;					// set for error checking
+int count = 1;					// int for count
+
+cout << "Enter the price of the house: ";				// allow user to enter the price
+cin >> price1;
+leng = price1.length();						// check length
+
+for (int a=0; a < leng; a++)						// error checking
+	{
+	if (!isdigit(price1[a]))
+		error = 1;
+	}
+	
+while (error > 0)							// while errors exit
+	{
+	error = 0;
+	cout << "You have entered an INVALID Price";
+	cout << "\n";
+	cout << "Enter the price of the house: ";			// allow user to re enter
+	cin >> price1;
+	leng = price1.length();
+
+	for (int a=0; a < leng; a++)				// error checking
+		{
+		if (!isdigit(price1[a]))
+			error = 1;
+		}
+	}
+
+price = atof(price1.c_str());						// turn string into a double
+	
+return price;				// return price
+}
+
+//*********************************************************************
+// FUNCTION: getstatus
+// DESCRIPTION: This function will get the status from the user, then it
+//				will error check and loop around until the value is correct
+// INPUT:
+//      Parameters: None
+//      File:  None
+//  OUTPUT:
+//      Return Val: getstatus
+//      Parameters: getstatus
+//      File:		None
+//  CALLS TO:  None
+//**********************************************************************
+int getstatus(void)
+{
+int choice;							// int for choice
+const int MAX = 3;					// max choice
+const int MIN = 1;					// min choice
+
+system("cls");
+cout << "Enter 1 to save the Status as AVAILABLE";
+cout << "\n";
+cout << "Enter 2 to save the Status as CONTRACT";
+cout << "\n";
+cout << "Enter 3 to save the Status as SOLD";
+cout << "\n\n";
+cout << "Enter your choice: ";					// display the choices, then ask user for choice
+cin >> choice;
+
+while ((choice < MIN)||(choice > MAX))					// while choice is out of range
+	{
+	system("cls");
+	cout << "You have entered an invalid choice";
+	cout << "\n\n";
+	cout << "Enter 1 to save the Status as AVAILABLE";
+	cout << "\n";
+	cout << "Enter 2 to save the Status as CONTRACT";
+	cout << "\n";
+	cout << "Enter 3 to save the Status as SOLD";
+	cout << "\n\n";
+	cout << "Enter your choice: ";					// display error message then allow user to re enter choice
+	cin >> choice;	
+	}
+return choice;					// return choice
+}
+
+//*********************************************************************
+// FUNCTION: getzip
+// DESCRIPTION: This function will get the zip code from the user, then it
+//				will error check and loop around until the value is correct
+// INPUT:
+//      Parameters: None
+//      File:  None
+//  OUTPUT:
+//      Return Val: zipcode
+//      Parameters: zipcode
+//      File:		None
+//  CALLS TO:  None
+//**********************************************************************
+string getzip (void)
+{
+string zipcode;
+int leng;					// int for length
+int numerror = 0;			// int for error checking
+int dasherror = 0;			// int for error checking
+int MAX = 10;				// max amount is 10
+
+	cout << "Enter the Zip Code of the house: ";
+	cin >> zipcode;
+	leng = zipcode.length();						// allow user to enter zip, then check the length	 
+
+do 										// do loop
+	{	 
+	if (leng > MAX)
+		{
+		cout << "You have entered a Zip Code that is too long";
+		cout << "\n";
+		cout << "The correct format is #####-####";
+		cout << "\n";
+		cout << "Please enter a VALID Zip Code: ";
+		cin >> zipcode;
+		leng = zipcode.length();							// if length too long, allow user to re enter after error message
+		}
+	
+	if (leng < MAX)
+		{
+		cout << "You have entered a Zip Code that is too short";
+		cout << "\n";
+		cout << "The correct format is #####-####";
+		cout << "\n";
+		cout << "Please enter a VALID Zip Code: ";
+		cin >> zipcode;
+		leng = zipcode.length();						// if length is too short, allow user to re enter after error message
+		}	   
+		
+	if (dasherror == 1)
+		{
+		cout << "You have entered an invalid Zip Code";
+		cout << "\n";
+		cout << "The correct format is #####-####";
+		cout << "\n";
+		cout << "Please enter a VALID Zip Code: ";
+		cin >> zipcode;
+		leng = zipcode.length();						//if dash is not in correct location display error mesage and allow user to re enter
+		}
+		
+	if (numerror == 1)
+		{
+		cout << "You have entered an invalid Zip Code";
+		cout << "\n";
+		cout << "The correct format is #####-####";
+		cout << "\n";
+		cout << "Please enter a VALID Zip Code: ";
+		cin >> zipcode;
+		leng = zipcode.length();					// if numbers were not correct, display error message and allow user to re enter
+		}
+		
+	numerror = 0;
+
+	for (int a=0; a < leng; a++)
+		{
+		if (a == 5)
+			{
+			if (zipcode[5] == '-')
+				dasherror = 0;						// error checking for dash
+			else
+				dasherror = 1;
+			}
+		else
+			{
+			if (!isdigit(zipcode[a]))
+				numerror = 1;					// error checking all values are digits
+			}
+		}
+	}while ((leng > MAX)||(leng < MAX)||(dasherror == 1)||(numerror == 1));		// loop while any errors exist
+	
+return zipcode;						// return zip code
+}
+
+//*********************************************************************
+// FUNCTION: getcompany
+// DESCRIPTION: This function will get the company from the user, then it
+//				will error check and loop around until the value is correct
+// INPUT:
+//      Parameters: None
+//      File:  None
+//  OUTPUT:
+//      Return Val: company
+//      Parameters: company
+//      File:		None
+//  CALLS TO:  None
+//**********************************************************************
+string getcompany (void)
+{
+string company;							// string value for company
+int MAX = 20;							// max string amount is 20
+int errorcode = 0;						// error checking value
+int leng;								// value for length
+int error = 0;							// error checking value
+
+cout << "Enter the name of the company for the listing: ";
+getline(cin, company);
+getline(cin, company);
+leng = company.length();					// allow user to enter string value
+
+for (int a=0; a < leng; a++)					// error checking for anything other than alpha or space
+	{
+	if (!isalpha(company[a]))
+		{
+		if (!isspace(company[a]))
+		errorcode = 1;
+		}  	   
+	}
+
+
+if (errorcode > 0)
+	error = 1;
+	
+if (leng > MAX)
+	error = 1;						// if errors exist
+
+while (error > 0)					// while errors exist
+	{
+	error = 0;
+	while (leng > MAX)						// if length is too long
+		{     
+		cout << "You have entered a company name that is too long";
+		cout << "\n";
+		cout << "The max number of charecters in the name is 20";
+		cout << "\n";
+		cout << "Please enter a VALID company name: ";
+		getline(cin, company);
+		leng = company.length();							// display error message and allow user to re enter
+			
+		errorcode = 0;
+		
+		for (int a=0; a < leng; a++)
+			{	
+			if (!isalpha(company[a]))
+				{
+				if (!isspace(company[a]))
+				errorcode = 1;
+				}
+			}
+		if (errorcode > 0)
+			error = 1;								// error check again
+		}
+		
+	while (errorcode > 0)
+		{
+		cin.ignore();	 	 
+		cout << "You have entered an invalid company name";
+		cout << "\n";
+		cout << "The company name can only contain letters and spaces";
+		cout << "\n";
+		cout << "Please enter a VALID company name: ";
+		getline(cin, company);
+		leng = company.length();							// if errors exist allow user to re enter
+		
+		errorcode = 0;
+		
+		for (int a=0; a < leng; a++)
+			{	
+			if (!isalpha(company[a]))
+				{
+				if (!isspace(company[a]))
+					errorcode = 1;
+				}
+			}
+		if (errorcode > 0)
+			error = 1;
+		if (leng > MAX)
+			error = 1;							// check if errors still exist
+		}
+	
+
+	}// end while error >0;
+	
+for (int b=0; b < leng; b++)
+	{
+	company[b] = tolower (company[b]);
+	}										// make all values lower case
+		
+for (int a=0; a < leng; a++)
+	{
+	if (a == 0)
+		company[0] = toupper (company[0]);				// capitlize the first letter
+	if (isspace (company[a]))							// capitalize each letter after a space
+		company[a+1] = toupper (company[a+1]);
+	}
+
+return company;							// return company
+}
+
+//*********************************************************************
+// FUNCTION: remove
+// DESCRIPTION: This function will ask the user which mls number they would
+//				like to delete, then delete the entire record of that value
+// INPUT:
+//      Parameters: houseList - the linked list
+//      File:  None
+//  OUTPUT:
+//      Return Val: None
+//      Parameters: houseList - the linked list
+//      File:		None
+//  CALLS TO:  displaymls - will display all of the mls #'s to screen
+//**********************************************************************
+void remove (houseNode* houseList)
+{
+int mls_num;						// value for user entered mls num
+const int highest = 999999;	  	  	  	  // max amount for mls num
+const int lowest = 100000;	  	  	  	  // min amount for mls num
+int mlsnumloc = -1;					// set location of mls num to -1, for not founf
+
+if (houseList == NULL)	 	 	 	 	 	 // if there are no listings, display a message and exit
+	{
+	cout << "There are no listings in the File to be deleted!";
+	cout << "\n";
+	system("pause");
+	}
+
+else										// else continue on
+	{
+	cout << "Here is a list of all the MLS Numbers on File";
+	cout << "\n\n";
+	displaymls (houseList);							// call to function to display all mls numberz
+	cout << "\n\n";
+	cout << "Please enter the MLS Number of the house you would like to remove: ";
+	cin >> mls_num;										// ask user for a mls number to delet
+	
+	while ((mls_num < lowest)||(mls_num > highest))					// error checking for the user entered mls number
+		{
+		cout << "You have entered an invalid MLS number";
+		cout << "\n";
+		cout << "Please enter a VALID 6 digit MLS number: ";
+		cin >> mls_num;								// if errors, display message, then allow user to re enter value
+		}
+	
+	}
+	       
+
+  houseNode* first = houseList;
+  houseNode *here,                           // Node being checked
+            *prev;                           // Node prior to node being checked
+
+  if ( first->house.mlsnum == mls_num )       // If delName found in first node,
+  		{
+         here = first;
+         first = first->next;		      //  Delete top item
+         delete here;
+        }
+
+  else {                                   // Not top item, so search...
+
+         prev = first;                      // Initialize prev and here to 
+         here = first->next;                // first 2 nodes in list
+
+         // Look for delName (while not end of list and name doesn't match)
+         while ( (here != NULL) && (here->house.mlsnum != mls_num) ) {   
+             	prev = here;               // move prev down one
+              	here = here->next;         // move here down one
+       	 }
+
+         if (here != NULL)             // If found, delete item from list
+		 		{
+                prev->next = here->next;
+                delete here;
+				cout << mls_num << " Has been deleted!";
+				cout << "\n";
+				system("pause");
+                }
+         else                              // Otherwise, give error message
+		 		{
+                cout << mls_num << " not found in list.";
+				cout << "\n";
+				system("pause");
+				}
+
+  }	// End else (not top Item)
+
+}
+
+//*********************************************************************
+// FUNCTION: displaymls
+// DESCRIPTION: This function will display all mls numbers in the linked list
+// INPUT:
+//      Parameters: houseList - the linked list
+//      File:  None
+//  OUTPUT:
+//      Return Val: None
+//      Parameters: None
+//      File:		None
+//  CALLS TO:  None
+//**********************************************************************
+void displaymls (houseNode* houseList)
+{
+int a=0;
+houseNode* tempptr = houseList;
+
+	while (tempptr != NULL)	  	  	  	  	  	  	  	  	  	  	  	  	  	  // switch to display enum as string and not number
+		{
+		cout << tempptr->house.mlsnum;
+			a = a +1;								// enter line after each record
+		      tempptr = tempptr->next;
+		if (a%4 == 0);
+			cout << "\n";
+		}		// end for loop
+}
+
+//*********************************************************************
+// FUNCTION: savetofile
+// DESCRIPTION: This function will delete the file LISTINGS, then it will
+//				write the new saved record to that same file, it will save each
+//				value from each record to one line, separated by a space
+//					EXAMPLE
+//					 123456 109995 0 39506-4059 Phillip Powell
+// INPUT:
+//      Parameters: houseList - the linked list
+//      File:  None
+//  OUTPUT:
+//      Return Val: None
+//      Parameters: None
+//      File:		LISTINGS
+//						Example
+//						 123456 109995 0 39506-4059 Phillip Powell
+//  CALLS TO:  None
+//**********************************************************************
+void savetofile (houseNode* houseList)
+{
+const string FILENAME = "LISTINGS.TXT"; 	 	 	 // input data file name
+int mls_num;
+double hprice;
+int stat;
+string zip_code;
+string comp;
+string filename1;
+char choice = 'N';
+int error = 0;
+houseNode* first = houseList;
+
+
+system("cls");
+cout << "FILE NAME IS CASE SENSITIVE!!";
+cout << "\n";
+cout << "Please enter the name of the file to save to: ";
+cin >> filename1;
+
+if (filename1 == FILENAME)
+	{
+	cout << "You have entered a filename that already exists!";
+	cout << "\n";
+	cout << "Would you like to continue, and overwrite(Y/N): ";
+	cin >> choice;
+	choice = toupper(choice);						// uppercase the choice
+		if (choice != 'Y')
+		error = 1;
+	}
+while (error == 1)
+	{
+	error = 0;
+	system("cls");
+	cout << "Please enter the name of the file to save to: ";
+	cin >> filename1;
+
+	if (filename1 == FILENAME)
+		{
+		cout << "You have entered a filename that already exists!";
+		cout << "\n";
+		cout << "Would you like to continue, and overwrite(Y/N): ";
+		cin >> choice;
+		choice = toupper(choice);						// uppercase the choice
+			if (choice != 'Y')
+			error = 1;
+		}
+	}
+
+ofstream outFile (filename1.c_str(),ios::out);	  	  //find and open the date file LISTINGS
+outFile.precision(0);
+outFile.setf(ios::fixed);			// set the output
+		
+while (first != NULL)
+	{
+	mls_num = first->house.mlsnum;
+	hprice = first->house.price;
+	stat = first->house.status;
+	zip_code = first->house.zipcode;
+	comp = first->house.company;
+		outFile << mls_num << " " << hprice << " " << stat << " " << zip_code << " " << comp << "\n";	 	 // write to the data file with the decimals lining up
+	first = first->next;
+	}
+	
+system("cls");
+
+		
+  return;					// return nothing
+}
+
+//*********************************************************************
+// FUNCTION: makechanges
+// DESCRIPTION: This function will read in the mls # and price change from a
+//				text file, then find the mls #, if in the list, and change the 
+//				price by whichever value is in price change
+// INPUT:
+//      Parameters: houseList - the linked list
+//      File:  CHANGES - File contains the mls # and price change
+//				EXAMPLE
+//				123456 -1000
+//  OUTPUT:
+//      Return Val: houseList - the linked list
+//      Parameters: None
+//      File:		None
+//  CALLS TO:  None
+//**********************************************************************
+houseNode* makechanges (houseNode* houseList)
+{
+const string FILENAME = "CHANGES.TXT";				// string for filename
+int mls_num;										// int for mls_num
+string change;										// string for price change
+int pricechange;									// amount price change
+char ch;											// ch to make sure its not end of file
+int total;											// int total for price change amount
+int numchanges = 0;	 	 	 	 	 	 	 	 	 // int to total up changes
+
+
+cout << "You have chosen to have the changes made to the listings";
+cout << "\n";
+cout << "Hit any key to start the process....";
+getch();
+
+  ifstream inData;									// find data file
+  inData.open (FILENAME.c_str());					// open data file
+  
+	if (!inData)	   	   	   	   	   	   	   	   	   // if data file was opened
+  		{
+		cout << "\n\n";
+		cout << "File could not be opened!";
+		cout << "\n";
+		cout << "Hit any key to return to the main menu";
+		getch();
+		}
+	else 
+		{
+		inData >> mls_num >> change;		  	  // priming read
+		system("cls");
+		cout << "Here are the new prices after the price changes";
+		cout << "\n\n";
+		cout << left << setw(15) << "MLS Number" << setw(20) << "New Asking Price";
+		cout << "\n";
+		cout << setw(15) << "-----------" << setw(19) << "-----------------";				// header for changes
+		cout << "\n";
+
+		while (inData && (ch != '\n'))  						// while not end of file
+			{ 
+			if (change[0] == '-')				// if subtract
+				total = 1;
+			if (change[0] == '+')				// if add
+				total = 2;
+			change.erase(0, 1);
+			pricechange = 0;						// reset price change
+			pricechange = atof(change.c_str());		// change price from string to int
+			houseNode* tempptr = houseList;			// pointer
+			
+			while (tempptr != NULL)				// while not end of list
+				{
+			   if (tempptr->house.mlsnum == mls_num)			// if found
+					{
+					if (total == 1)
+						{
+						tempptr->house.price = tempptr->house.price - pricechange;
+						cout << setw(15) << tempptr->house.mlsnum << setw(20) << tempptr->house.price;		// change price, display
+						cout << "\n";
+						}
+					if (total == 2)
+						{
+						tempptr->house.price = tempptr->house.price + pricechange;
+						cout << setw(15) << tempptr->house.mlsnum << setw(20) << tempptr->house.price;		// change price display
+						cout << "\n";
+						}
+						
+					numchanges = 1;
+					while (tempptr != NULL)
+						{
+						tempptr = tempptr->next;
+						}			// move to end of list
+					}
+				else
+				tempptr = tempptr->next;
+			    }
+			inData >> mls_num >> change;		  	  // priming read		
+			}   // end while
+		}
+		inData.close();	    			// close the data file
+		
+		if (numchanges == 0)
+			{
+			system("cls");
+			cout << "\n";
+			cout << "No changes were made to the listings!";
+			}
+		cout << "\n\n";
+		system("pause");
+return houseList;
+}	// end if in data
