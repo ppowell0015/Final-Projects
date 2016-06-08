@@ -1,0 +1,172 @@
+#include <iostream>
+#include <string>
+#include <cctype> 
+#include <algorithm>
+#include <functional>
+#include <conio.h>
+#include <iomanip>
+#include <string>
+using namespace std;
+
+int main()
+{
+	string morseletters[39]= {".-","-...","-.-.","-..",".","..-.","--.","....","..",".---","-.-",".-..","--","-.","---",".--.","--.-",".-.","...","-","..-","...-",".--","-..-","-.--","--..",".----","..---","...--","....-",".....","-....","--...","---..","----.","-----",".-.-.-","--..--","..--..",};
+	string regletters[39]= {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R","S", "T", "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0","Stop", ",", "?"};
+	string regmessage, morsecode;
+	char blank=' ';
+	char again='y';
+	int messlength;
+	int count=0, i=0;
+	int ans;
+    unsigned int j=0;
+
+
+while (ans!=4)
+{
+system("cls");
+cout << "Welcome to the English and Morse Translator...";
+cout << "\n\n";
+cout << "Enter 1 to start the English to Morse Translator";
+cout << "\n";
+cout << "Enter 2 to start the Morse to English Translator";
+cout << "\n";
+cout << "Enter 3 to see the Morse Alphabet";
+cout << "\n";
+cout << "Enter 4 to EXIT the program...";
+cout << "\n\n";
+cout << "Please enter your choice: ";
+cin >> ans;
+
+while ((ans <1)||(ans>4))
+	{
+	cout << "You have entered an invalid choice....";
+	cout << "\n";
+	cout << "Please select a new choose of either 1, 2, 3, or 4: ";
+	cin >> ans;
+	}	   
+	
+		switch(ans)
+		{
+			case 1:
+			while(again == 'y')
+			{	  
+				system("cls");
+				cout << "You have chosen the English to Morse Translator";
+				cout << "\n\n";
+				cout<<"Please enter a string that you would like translated to Morse Code: \n";
+				getline(cin, regmessage);
+				getline(cin, regmessage);
+				messlength=regmessage.size();
+				system("cls");
+				cout << "You entered this to be translated:";
+				cout << "\n\n";
+				cout << regmessage;
+				cout << "\n\n";
+				cout << "This translated to Morse code is: ";
+				cout << "\n\n";
+		 	    transform(regmessage.begin(), regmessage.end(), regmessage.begin(), ptr_fun <int, int> (toupper ) );
+				for (i=0;i<messlength;i++)
+			    {
+					int find_string=0;
+					int maxstring=49;
+					while (find_string < maxstring)
+					{
+						if (regmessage[i]==regletters[find_string][0])
+						{
+							count=1;
+							cout << morseletters[find_string] << " ";
+							break;
+						}
+						find_string+=1;
+						}
+					}
+				cout << "  .-.-.-";
+				
+				if (count==0)
+					{
+					system("cls");
+					cout << "You did not enter anything to be translated";
+					}
+			cout << "\n\n";
+			cout <<"Would you like to have another string translated? (y=yes or n=no)?: ";
+			cin >> again;
+			again = (char) again;
+			again = tolower(again);
+			cout << "\n\n";
+		}	   	   	   	   	   	   
+		break;	  	  
+		
+			case 2:
+			while(again == 'y')
+	{	  
+				system("cls");
+				cout << "You have chosen to translate Morse Code to Text";
+				cout << "\n\n";
+				cout << " Please enter a Morse Code word(each letter sperate by space): ";
+				getline(cin, morsecode);
+				getline(cin, morsecode);
+				for(int i=0; i<morsecode.size(); i++)
+				{
+					int find_string=0;
+					int maxstring=49;
+					while (find_string < maxstring)
+					{
+						if (morsecode[i]==morseletters[find_string][0])
+					    {
+							count=1;
+							cout << regletters[find_string] << " ";
+							break;
+						}
+						find_string+=1;
+					}
+				}
+				if (count==0)
+					{
+					system("cls");
+					cout << "You did not enter anything to be translated";
+					}
+					
+				cout << "\n\n";
+				cout <<"Would you like to have another string translated? (y=yes or n=no)?: ";
+				cin >> again;
+				again = (char) again;
+				again = tolower(again);
+				cout << "\n\n";
+		}	   	   	
+				break;
+		
+		
+		case 3:
+		system("cls");
+		while (count!=39)
+			{
+				if(j!=3)
+				{
+				  cout << regletters[count] << " = " << morseletters[count] << "  \t" ;
+				  count++;
+				  j++;
+			    }
+				else 
+				{
+				  cout << "\n";;
+				  j=0;
+				}
+			
+			}
+				cout << "\n";
+		cout << "\n\nHit Any Key to Continue...";
+		getch();
+		break;
+		
+		case 4:
+		system("cls");
+		cout << "Thank you for using the Morse Code Translator";
+		cout << "\n";
+		cout << "\n\nHit Any Key to Continue...";
+		getch();
+		break;
+		
+		}
+}
+	return 0;
+}
