@@ -1,0 +1,211 @@
+//********************************************************
+// File Name   : Sample_BST_Tester.cpp
+// Author      : Phillip Powell
+// Student ID  : 002277196
+// Assignment  : Programming Assignment Week 7
+// Abstract    : This file allows the user to enter any number
+//				 to be added to a BST.  Once the user is done adding
+//				 values, the program displays the tree in pre order,
+//				 and in order.  Then Finally, the program allows the user to
+//				 search the tree for a certain number entered by the user, and
+//				 it displays the total number of nodes in the tree
+// Date Due    : February 23, 2016
+// -----------------------------------------------------------
+// Class       : CST370 - SPRING 2016
+// Instructor  : Dr. Seetharam
+// ********************************************************
+
+/*----- Sample_BST_Tester.cpp -----------------------------------------------------
+                Program for testing BST.
+ ------------------------------------------------------------------------*/
+#include <iostream>
+using namespace std;
+
+#include "BST.h"
+
+int main()
+{
+   // Testing Constructor and empty()
+   BST intBST;            // test the class constructor
+   cout << "Constructing empty BST\n";
+   cout << "BST " << (intBST.empty() ? "is" : "is not") << " empty\n";
+
+   // Testing insert
+   cout << "\nNow insert a bunch of integers into the BST."
+           "\nTry items not in the BST and some that are in it:\n";
+   int number;
+
+   // Allow the user to enter as many numbers as they want
+   for (;;)
+   {
+      cout << "Item to insert (-999 to stop): ";
+      cin >> number;
+      if (number == -999) break;
+      intBST.insert(number);
+   }
+   cout << "BST " << (intBST.empty() ? "is" : "is not") << " empty\n";
+
+   // Call to preorder function
+   cout << "Here is the Binary Search Tree in Pre Order: \n";
+   intBST.PreOrder();
+
+   // Call to inorder function
+   cout << "\n\nHere is the Binary Search Tree in Order: \n";
+   intBST.InOrder();
+
+   // Testing search() with recursion
+   cout << "\n\nNow testing the search() operation."
+           "\nTry both items in the BST and some not in it:\n";
+   for (;;)
+   {
+      cout << "Item to find (-999 to stop): ";
+      cin >> number;
+      if (number == -999) break;
+      cout << (intBST.search(number) ? "Found" : "Not found") << endl;
+   }
+
+   // int for count set to 0 for start
+   int count = 0;
+
+   // Call to count function
+   count = intBST.nodeCount();
+   cout << "\n\nThe total number of nodes in the tree is: "<< count << "\n\n";
+
+   // Pause for user to see data
+   system("pause");
+}
+
+
+//********************************************************
+// File Name   : BST.cpp
+// Author      : Phillip Powell
+// Student ID  : 002277196
+// Assignment  : Programming Assignment Week 7
+// Abstract    : This file contains functions that will be used in the
+//				 tester file to find information about the entered Binary
+//				 search trees, function include a search, inorder, preorder,
+//				 nodecount, and insert
+// Date Due    : February 23, 2016
+// -----------------------------------------------------------
+// Class       : CST370 - SPRING 2016
+// Instructor  : Dr. Seetharam
+// ********************************************************
+
+#include <iostream>
+#include <iomanip>
+
+using namespace std;
+
+#include "BST.h"
+
+//--- Definition of constructor
+BST::BST()
+: myRoot(0)
+{}
+
+bool BST::empty() const
+{ return myRoot == 0; }
+
+// Search function call
+bool BST::search(const int & item) const
+{
+   return search(myRoot, item);
+}
+
+// Search with recursion
+bool BST::search(BinNode * root, const int & number) const
+{
+   if (root == 0)
+	   return false;
+
+   // IF found return true
+   if (number == root->data)
+	   return true;
+   // If number smaller go left
+      if (number < root->data)
+	   return search(root->left, number);
+	// Else go right
+   else
+	   return search(root->right, number);
+}
+
+// Node count function call
+int BST::nodeCount()
+{
+	return nodeCount(myRoot);
+}
+
+// Node count recursive function
+int BST::nodeCount(BinNode *root)
+{
+	if (root == 0)
+		return 0;
+	else
+		return nodeCount(root->left) + nodeCount(root->right) + 1;
+}
+
+void BST::insert(const int & item)
+{
+   BinNode * locptr = myRoot;   // search pointer
+   BinNode * parent = 0;        // pointer to parent of current node
+   bool found = false;     // indicates if item already in BST
+   while (!found && locptr != 0)
+   {
+      parent = locptr;
+      if (item < locptr->data)       // descend left
+         locptr = locptr->left;
+      else if (locptr->data < item)  // descend right
+         locptr = locptr->right;
+      else                           // item found
+         found = true;
+   }
+   if (!found)
+   {                                 // construct node containing item
+      locptr = new BinNode(item);  
+      if (parent == 0)               // empty tree
+         myRoot = locptr;
+      else if (item < parent->data )  // insert to left of parent
+         parent->left = locptr;
+      else                           // insert to right of parent
+         parent->right = locptr;
+   }
+   else
+      cout << "Item already in the tree\n";
+}
+
+// In order function call
+void BST::InOrder()
+{
+	BinNode * root = myRoot;
+	InOrder(myRoot);
+}
+
+// In order recursive function
+void BST::InOrder(BinNode * root)
+{
+	if (root == 0)
+		return;
+	
+	// go left until empty, then display, then right
+	InOrder(root->left);
+	cout << root->data << " ";
+	InOrder(root->right);
+}
+
+// Pre order function call
+void BST::PreOrder()
+{
+	BinNode * root = myRoot;
+	PreOrder(myRoot);
+}
+
+// Pre order recursive function
+void BST::PreOrder(BinNode * root)
+{
+	if (root == 0)
+		return;
+	// display, then go left, then right when empty
+	cout << root->data << " ";
+	PreOrder(root->left);
+	PreOrder(root->right);
+}
