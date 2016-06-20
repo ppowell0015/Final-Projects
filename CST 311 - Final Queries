@@ -1,0 +1,89 @@
+set echo on
+SET LINESIZE 200
+set pagesize 600
+
+
+spool C:\CST363\final\finalqueries.txt
+
+set echo off
+set verify off
+set heading off
+
+SELECT BRANCH_Name, BRANCH_ID
+FROM BRANCH;
+
+Prompt --- All Technicians Assigned to a branch---
+
+accept vbranch prompt 'Enter Branch ID: ';
+set heading on
+SELECT EMP_ID, EMP_LName, EMP_FName, EMP_Role
+FROM EMPLOYEE
+WHERE BRANCH_ID = '&vbranch';
+
+
+Prompt --- Technician Customer List---
+set heading off;
+
+accept vtechid prompt 'Please Enter The Technician ID: ';
+
+Prompt Thank You!
+set heading on
+SELECT CUST_ID, CUST_FName, CUST_LName, CUST_Phone, CUST_Address, CUST_ServiceCharge
+FROM CUSTOMER
+WHERE EMP_ID_Tech = '&vtechid';
+
+
+
+Prompt --- Customers Per Technician---
+
+--used for management to assign new customers to Technicians with fewer customers
+
+SET heading on
+
+SELECT rtrim(EMP_FName)||' '||rtrim(EMP_LName) as Employee, COUNT(*) AS "Number Of Customers"
+FROM CUSTOMER,EMPLOYEE
+WHERE EMP_ID_TECH = EMP_ID
+GROUP BY EMP_FName, EMP_LName;
+
+
+
+Prompt -- Branches and Managers --
+--list of all branches and the manager with there phone number
+
+SELECT BRANCH_Name, rtrim(EMP_FName) || ' '||rtrim(EMP_LName) as "Branch Manager", 
+	SUBSTR(rtrim(EMP_Phone),0,3) ||'-'|| SUBSTR(rtrim(EMP_Phone),4,3) || '-' || SUBSTR(rtrim(EMP_Phone),7) AS Phone
+FROM EMPLOYEE, BRANCH
+WHERE BRANCH_Manager = EMP_ID;
+
+
+Prompt  -- Last Service Date for all Customers
+
+SELECT CUST_FName, CUST_LName, MAX(SERVICE_DATE) AS "Last Serviced"
+FROM CUSTOMER, SERVICE
+WHERE CUSTOMER.CUST_ID = SERVICE.CUST_ID
+GROUP BY CUST_FName, CUST_LName;
+
+prompt -- Customers that have not been serviced in 30+ days
+
+SELECT CUST_FName, CUST_LName, MAX(SERVICE_DATE) AS Serviced, rtrim(EMP_FName) || ' '||rtrim(EMP_LName) as Technician
+FROM CUSTOMER c, SERVICE, EMPLOYEE
+WHERE c.CUST_ID = SERVICE.CUST_ID
+	AND c.EMP_ID_Tech = EMPLOYEE.EMP_ID
+	AND ((SELECT SYSDATE FROM DUAL)-(	SELECT MAX(SERVICE_DATE) 
+										FROM SERVICE s 
+										WHERE c.CUST_ID = S.CUST_ID))>30
+GROUP BY CUST_FName, CUST_LName, rtrim(EMP_FName) || ' '||rtrim(EMP_LName)
+ORDER BY rtrim(EMP_FName) || ' '||rtrim(EMP_LName);
+
+
+
+prompt -- Branch Income and customers
+
+
+SELECT BRANCH_Name, rtrim(EMP_FName) || ' '||rtrim(EMP_LName) as "Branch Manager", COUNT(*) as Customers, TO_CHAR(SUM(CUST_ServiceCharge), '$999,999,999.99') as "Monthly_Income"
+FROM BRANCH, CUSTOMER, EMPLOYEE
+WHERE BRANCH.BRANCH_ID = CUSTOMER.BRANCH_ID
+	AND EMPLOYEE.EMP_ID = BRANCH.BRANCH_Manager
+GROUP BY BRANCH_Name, rtrim(EMP_FName) || ' '||rtrim(EMP_LName);
+
+spool off
