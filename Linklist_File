@@ -1,0 +1,218 @@
+//********************************************************
+// File Name   : LinkedList.cpp
+// Author      : Phillip Powell
+// Student ID  : 002277196
+// Assignment  : Programming Assignment 1
+// Abstract    : This file contains member functions for the linkedList file
+// Date Due    : January 12, 2016
+// -----------------------------------------------------------
+// Class       : CST370 - SPRING 2016
+// Instructor  : Dr. Seetharam
+// ********************************************************
+
+//----- LinkedList.cpp -----
+
+#include <iostream>
+using namespace std;
+
+#include "LinkedList.h"
+
+//-- Default constructor
+LinkedList::LinkedList()
+{ 
+	mySize = 0;
+	first = NULL;
+}
+
+//-- Definition of the copy constructor
+LinkedList::LinkedList(const LinkedList & origList)
+{
+	mySize = origList.mySize;
+	first = NULL;
+	
+	if (mySize == 0) 
+		return;
+
+	Node * origPtr, * lastPtr;
+	first = new Node(origList.first->data); // copy first node
+	lastPtr = first;
+	origPtr = origList.first->next;
+	while (origPtr != NULL)
+	{
+		lastPtr->next = new Node(origPtr->data);
+		origPtr = origPtr->next;
+		lastPtr = lastPtr->next;
+	}
+}
+
+
+//-- Definition of the destructor
+LinkedList::~LinkedList()
+{
+	Node * prev = first;
+	Node * ptr;
+
+	while (prev != NULL)
+	{
+		ptr = prev->next;
+		delete prev;
+		prev = ptr;
+	}
+}
+
+
+//-- Definition of insert()
+void LinkedList::insert(char dataVal, int index)
+{
+	if (index < 0 || index > mySize)
+	{
+		cerr << "Illegal location to insert -- " << index << endl;
+		return;
+	}
+
+	mySize++;
+	Node * newPtr = new Node(dataVal);
+	Node * predPtr = first;
+	if (index == 0)
+	{
+		newPtr->next = first;
+		first = newPtr;
+	}
+	else
+	{
+		for(int i = 1; i < index; i++)
+			predPtr = predPtr->next;
+		newPtr->next = predPtr->next;
+		predPtr->next = newPtr;
+	}
+}
+
+
+//-- Definition of erase()
+void LinkedList::erase(int index)
+{
+	if (index < 0 || index >= mySize)
+	{
+		cerr << "Illegal location to delete -- " << index << endl;
+		return;
+	}
+
+	mySize--;
+	Node * ptr;
+	Node * predPtr = first;
+	if (index == 0)
+	{
+		ptr = first;
+		first = ptr->next;
+		delete ptr;
+	}
+	else
+	{
+		for(int i = 1; i < index; i++)
+			predPtr = predPtr->next;
+		ptr = predPtr->next;
+		predPtr->next = ptr->next;
+		delete ptr;
+	}
+}
+
+
+
+//-- Definition of display()
+void LinkedList::display(ostream & out) const
+{
+	Node * ptr = first;
+	while (ptr != 0)
+	{
+		out << ptr->data << " ";
+		ptr = ptr->next;
+	}
+}
+
+// Definition of substring();
+void LinkedList::substring(ostream & out)
+{
+	//Set counter to 0 to start, made node's for pointers
+    int counter = 0;
+    Node * ptr = first;
+	Node * aPtr = first;
+	Node * bPtr = first;
+    Node * tempAPtr = first;
+    Node * tempBPtr = first;
+
+	// While pointer does not equal 0
+	while (ptr != 0)
+	{
+		// If A is found
+		if (ptr->data =='A')
+		{
+			aPtr = ptr;
+			tempAPtr = ptr;
+			ptr = ptr->next;
+
+			while (ptr !=0)
+			{
+				// If B is found
+				if (ptr->data == 'B')
+				{
+					bPtr = ptr;
+					tempBPtr = ptr;
+					counter++;
+
+					cout << "Substring " << counter << ": ";
+
+					// display substring to user
+					while (tempAPtr <= bPtr)
+					{
+						out << tempAPtr->data;
+						tempAPtr = tempAPtr->next;
+					}
+
+					cout <<"\n\n";
+
+					// Reset pointers to first A
+					tempAPtr = aPtr;
+					bPtr = bPtr->next;
+
+				}
+				//Next pointer
+				ptr = ptr->next;
+			}
+
+			ptr = aPtr;
+			ptr = ptr->next;
+
+			while (ptr != tempBPtr)
+			{
+				if (ptr->data == 'A')
+				{
+					aPtr = ptr;
+					counter++;
+					cout << "Substring " << counter << ": ";
+					while (aPtr < tempBPtr)
+					{
+						out << aPtr->data;
+						aPtr = aPtr->next;
+					}
+
+					cout << tempBPtr->data;
+					cout << "\n\n";
+				}
+			ptr = ptr->next;
+			}
+		
+		// Display total strings found
+		cout << "Total " << counter << " strings!";
+
+		//Return to main
+		return;
+		}
+	
+		ptr = ptr->next;
+	}
+		// Display 0 if none found
+		cout << "Total " << counter << " strings!";
+
+}
+
+//endof
