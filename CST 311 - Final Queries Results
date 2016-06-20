@@ -1,0 +1,122 @@
+SQL> 
+SQL> set echo off
+
+Livermore, CA               101                                                                                                                                                                         
+Concord, CA                 102                                                                                                                                                                         
+Sacramento, CA              103                                                                                                                                                                         
+Stockton, CA                104                                                                                                                                                                         
+San Jose, CA                105                                                                                                                                                                         
+
+--- All Technicians Assigned to a branch-- 
+Enter Branch ID: 101
+
+    EMP_ID EMP_LNAME                 EMP_FNAME            EMP_ROLE                                                                                                                                      
+---------- ------------------------- -------------------- ---------------                                                                                                                               
+     35786 Powell                    Phillip              Technician                                                                                                                                    
+     50396 Johnson                   Mike                 Technician                                                                                                                                    
+     30597 Redmon                    Bob                  Technician                                                                                                                                    
+     51134 Hartman                   Mark                 Technician                                                                                                                                    
+     44509 Smith                     Josiah               Technician                                                                                                                                    
+     10596 Erickson                  Dave                 Branch Manager                                                                                                                                
+
+6 rows selected.
+
+--- Technician Customer List-- set heading off
+Please Enter The Technician ID: 35786
+Thank You!
+
+   CUST_ID CUST_FNAME           CUST_LNAME                CUST_PHONE      CUST_ADDRESS                   CUST_SERVICECHARGE                                                                             
+---------- -------------------- ------------------------- --------------- ------------------------------ ------------------                                                                             
+1002305940 John                 Doe                       9257094069      123 First St.                                  95                                                                             
+1009678357 Bob                  Johnson                   9257953696      5604 Kelly St.                                 97                                                                             
+1002305941 Jamie                Dover                     9256071125      405 Briar Ln.                                  89                                                                             
+1002225478 Gloria               Sanchez                   9255961036      30594 Glenwood Dr.                            113                                                                             
+1007768100 Steve                Davis                     4085917584      17 Park Ln.                                    87                                                                             
+1010592853 Red                  Chipson                   5104958204      2412 47th st.                                  77                                                                             
+1007768112 Bob                  Corsaro                   408430295       24 First st.                                  107                                                                             
+9430295830 Larry                Dover                     4085930295      207 Dover Ave.                                104                                                                             
+8126572609 Steven               Redmon                    4088753423      123 Second Ln.                                100                                                                             
+3452312650 Ellie                Montana                   4081427640      213 54th Ave.                                  84                                                                             
+
+10 rows selected.
+
+--- Customers Per Technician-- 
+
+EMPLOYEE                                       Number Of Customers                                                                                                                                      
+---------------------------------------------- -------------------                                                                                                                                      
+Mike Johnson                                                    10                                                                                                                                      
+Fred Lewis                                                       3                                                                                                                                      
+Ryan Addison                                                     1                                                                                                                                      
+Josiah Smith                                                     6                                                                                                                                      
+Michael Crabtree                                                 1                                                                                                                                      
+Phillip Powell                                                  10                                                                                                                                      
+Zack White                                                       3                                                                                                                                      
+Rick Wong                                                        3                                                                                                                                      
+Steve Young                                                      1                                                                                                                                      
+Dan Waves                                                        1                                                                                                                                      
+Mark Hartman                                                     6                                                                                                                                      
+Palmer Carson                                                    1                                                                                                                                      
+Jeff Garcia                                                      1                                                                                                                                      
+Aaron Payne                                                      1                                                                                                                                      
+Bob Redmon                                                      10                                                                                                                                      
+Ryan Braun                                                       3                                                                                                                                      
+Alex Guyson                                                      1                                                                                                                                      
+Mike Palma                                                       1                                                                                                                                      
+Robert Posey                                                     2                                                                                                                                      
+Ian Dennis                                                       1                                                                                                                                      
+Dino Stevenson                                                   3                                                                                                                                      
+Dennis Brown                                                     3                                                                                                                                      
+Cohen DeYoung                                                    1                                                                                                                                      
+Guy Brewer                                                       1                                                                                                                                      
+
+24 rows selected.
+
+-- Branches and Managers - --list of all branches and the manager with there phone number
+
+BRANCH_NAME          Branch Manager                                 PHONE                                                                                                                               
+-------------------- ---------------------------------------------- -----------------                                                                                                                   
+Livermore, CA        Dave Erickson                                  925-409-2059                                                                                                                        
+Concord, CA          Alex Stevens                                   510-495-0930                                                                                                                        
+Sacramento, CA       George Burkett                                 209-596-0395                                                                                                                        
+Stockton, CA         Jason Heib                                     209-506-9395                                                                                                                        
+San Jose, CA         Bernardo Evans                                 408-495-0395                                                                                                                        
+
+-- Last Service Date for all Customers
+
+CUST_FNAME           CUST_LNAME                Last Serv                                                                                                                                                
+-------------------- ------------------------- ---------                                                                                                                                                
+Steve                Davis                     03-MAR-15                                                                                                                                                
+Caryl                Betts                     14-JAN-15                                                                                                                                                
+Jamie                Dover                     31-JAN-15                                                                                                                                                
+Janet                Hays                      04-MAR-15                                                                                                                                                
+John                 Doe                       24-MAR-15                                                                                                                                                
+Bob                  Johnson                   03-FEB-15                                                                                                                                                
+Carrie               Jansen                    16-FEB-15                                                                                                                                                
+Gloria               Sanchez                   15-APR-15                                                                                                                                                
+
+8 rows selected.
+
+-- Customers that have not been serviced in 30+ days
+
+CUST_FNAME           CUST_LNAME                SERVICED  TECHNICIAN                                                                                                                                     
+-------------------- ------------------------- --------- ----------------------------------------------                                                                                                 
+Caryl                Betts                     14-JAN-15 Mike Johnson                                                                                                                                   
+Janet                Hays                      04-MAR-15 Mike Johnson                                                                                                                                   
+Carrie               Jansen                    16-FEB-15 Mike Johnson                                                                                                                                   
+Steve                Davis                     03-MAR-15 Phillip Powell                                                                                                                                 
+John                 Doe                       24-MAR-15 Phillip Powell                                                                                                                                 
+Jamie                Dover                     31-JAN-15 Phillip Powell                                                                                                                                 
+Bob                  Johnson                   03-FEB-15 Phillip Powell                                                                                                                                 
+
+7 rows selected.
+
+-- Branch Income and customers
+
+BRANCH_NAME          Branch Manager                                  CUSTOMERS Monthly_Income                                                                                                           
+-------------------- ---------------------------------------------- ---------- ----------------                                                                                                         
+Livermore, CA        Dave Erickson                                          42        $4,059.00                                                                                                         
+San Jose, CA         Bernardo Evans                                          5          $489.00                                                                                                         
+Concord, CA          Alex Stevens                                           15        $1,501.00                                                                                                         
+Stockton, CA         Jason Heib                                              5          $493.00                                                                                                         
+Sacramento, CA       George Burkett                                          7          $699.00                                                                                                         
+
